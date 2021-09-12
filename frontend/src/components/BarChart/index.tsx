@@ -33,36 +33,42 @@ const BarChart = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/sales/success-by-seller`).then((response) => {
-      const data = response.data as SaleSuccess[];
-      const myLabels = data.map((x) => x.sellerName);
-      const mySeries = data.map((x) => round((100.0 * x.deals) / x.visited, 1));
-
-      setChartData({
-        labels: {
-          categories: myLabels,
-        },
-        series: [
-          {
-            name: '% Success',
-            data: mySeries,
-          },
-        ],
-      });
-    });
-  }, []);
-
-  useEffect(() => {
     const timer = setTimeout(() => {
-      axios.get('data').then((response) => {
-        setChartData(response.data);
-      });
+      axios.get(`${BASE_URL}/sales/success-by-seller`).then((response) => {
+        const data = response.data as SaleSuccess[];
+        const myLabels = data.map((x) => x.sellerName);
+        const mySeries = data.map((x) =>
+          round((100.0 * x.deals) / x.visited, 1)
+        );
 
+        setChartData({
+          labels: {
+            categories: myLabels,
+          },
+          series: [
+            {
+              name: '% Success',
+              data: mySeries,
+            },
+          ],
+        });
+      });
       setLoading(false);
     });
-
     return () => clearTimeout(timer);
   }, []);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     axios.get('data').then((response) => {
+  //       setChartData(response.data);
+  //     });
+
+  //     setLoading(false);
+  //   }, 3000);
+
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   const options = {
     plotOptions: {
@@ -74,15 +80,16 @@ const BarChart = () => {
 
   return (
     <div>
-      {loading ? (
-        <Skeleton count={5} height={33} />
-      ) : (
-        <Chart
-          options={{ ...options, xaxis: chartData.labels }}
-          series={chartData.series}
-          type='bar'
-          height='240'
-        />
+      {loading && <Skeleton count={5} height={33} />}
+      {!loading && (
+        <>
+          <Chart
+            options={{ ...options, xaxis: chartData.labels }}
+            series={chartData.series}
+            type='bar'
+            height='240'
+          />
+        </>
       )}
     </div>
   );
