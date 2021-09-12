@@ -4,6 +4,7 @@ import Chart from 'react-apexcharts';
 import { SaleSuccess } from 'types/sale';
 import { BASE_URL } from 'utils/requests';
 import { round } from 'utils/format';
+import Skeleton from 'react-loading-skeleton';
 
 type SeriesData = {
   name: string;
@@ -29,6 +30,7 @@ const BarChart = () => {
       },
     ],
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get(`${BASE_URL}/sales/success-by-seller`).then((response) => {
@@ -50,6 +52,18 @@ const BarChart = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      axios.get('data').then((response) => {
+        setChartData(response.data);
+      });
+
+      setLoading(false);
+    });
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const options = {
     plotOptions: {
       bar: {
@@ -59,12 +73,18 @@ const BarChart = () => {
   };
 
   return (
-    <Chart
-      options={{ ...options, xaxis: chartData.labels }}
-      series={chartData.series}
-      type='bar'
-      height='240'
-    />
+    <div>
+      {loading ? (
+        <Skeleton count={5} height={33} />
+      ) : (
+        <Chart
+          options={{ ...options, xaxis: chartData.labels }}
+          series={chartData.series}
+          type='bar'
+          height='240'
+        />
+      )}
+    </div>
   );
 };
 

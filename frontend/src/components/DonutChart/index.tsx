@@ -2,6 +2,7 @@ import axios from 'axios';
 import Chart from 'react-apexcharts';
 import { BASE_URL } from 'utils/requests';
 import { SaleSum } from 'types/sale';
+import Skeleton from 'react-loading-skeleton';
 import { useEffect, useState } from 'react';
 
 type ChartData = {
@@ -14,6 +15,7 @@ const DonutChart = () => {
     labels: [],
     series: [],
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios.get(`${BASE_URL}/sales/amount-by-seller`).then((response) => {
@@ -25,18 +27,41 @@ const DonutChart = () => {
     });
   }, []);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      axios.get('data').then((response) => {
+        setChartData(response.data);
+      });
+
+      setLoading(false);
+    });
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const options = {
     legend: {
       show: true,
     },
   };
   return (
-    <Chart
-      options={{ ...options, labels: chartData.labels }}
-      series={chartData.series}
-      type='donut'
-      height='240'
-    />
+    <div>
+      {loading ? (
+        <Skeleton
+          style={{ marginLeft: 200 }}
+          circle={true}
+          height={200}
+          width={200}
+        />
+      ) : (
+        <Chart
+          options={{ ...options, labels: chartData.labels }}
+          series={chartData.series}
+          type='donut'
+          height='240'
+        />
+      )}
+    </div>
   );
 };
 
